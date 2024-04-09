@@ -149,10 +149,11 @@
     <progress value="0" max="100" id="progress" hidden=1></progress>
   </div>
 
+  <div class="emscripten" id="status"></div>
   <textarea id="output" rows="8"></textarea>
 
   <script type='text/javascript'>
-
+    var statusElement = document.getElementById('status');
     var Module = {
       print: (function () {
         var element = document.getElementById('output');
@@ -170,9 +171,18 @@
             element.scrollTop = element.scrollHeight; // focus on bottom
           }
         };
-      })()
+      })(),
+      setStatus: (text) => {
+        if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+        if (text === Module.setStatus.last.text) return;
+        var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+        var now = Date.now();
+        if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+        Module.setStatus.last.time = now;
+        Module.setStatus.last.text = text;
+        statusElement.innerHTML = text;
+      },
     };
-    Module.setStatus('Downloading...');
     window.onerror = (event) => {
       // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
       Module.setStatus('Exception thrown  , see JavaScript console');
@@ -191,7 +201,7 @@
   <div class="emscripten">
     <button onclick="sample()">Run</button>
 
-    <div id="hist"  style='display: flex;flex-direction: column; height: 100vh'>Plot here?</div>
+    <div id="hist" style='display: flex;flex-direction: column; height: 100vh'>Posterior</div>
   </div>
 
 </body>
