@@ -46,7 +46,7 @@ function sample() {
     // Sample from the model
     const result = Module._tinystan_sample(model, NUM_CHAINS, null, seed, 1, 2.0, NUM_SAMPLES, NUM_SAMPLES, 2 /* diagonal */, null,
         1, 0.8, 0.5, 0.75, 10, 75, 50, 25, 0, 1.0, 0.0, 10, 100,
-        NUM_CHAINS, out_ptr, n_out, err_ptr);
+        NUM_CHAINS, out_ptr, n_out, null, err_ptr);
 
     // Check for errors
     if (result != 0) {
