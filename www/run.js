@@ -2,6 +2,10 @@
 
 function sample() {
 
+    // clear previous output
+    Module.setStatus("")
+    document.getElementById('output').value = "";
+
     const NUM_CHAINS = 4;
     const NUM_SAMPLES = 1000;
 

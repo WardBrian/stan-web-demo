@@ -184,13 +184,7 @@
       },
     };
     window.onerror = (event) => {
-      // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
       Module.setStatus('Exception thrown  , see JavaScript console');
-      spinnerElement.style.display = 'none';
-      Module.setStatus = (text) => {
-        if (text) console.error('[post-exception status] ' + text);
-      };
-
     };
   </script>
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" charset="utf-8"></script>
@@ -200,7 +194,6 @@
 
   <div class="emscripten">
     <button onclick="sample()">Run</button>
-
     <div id="hist" style='display: flex;flex-direction: column; height: 100vh'>Posterior</div>
   </div>
 
