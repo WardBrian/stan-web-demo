@@ -1,0 +1,17 @@
+{
+    "plugins": [
+        [
+            "prismjs",
+            {
+                "languages": [
+                    "stan"
+                ],
+                "plugins": [
+                    "line-numbers",
+                    "show-language"
+                ],
+                "css": true
+            }
+        ]
+    ]
+}
