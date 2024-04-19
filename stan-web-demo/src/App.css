@@ -9,20 +9,3 @@
 .card {
   padding: 2em;
 }
-
-
-textarea {
-  width: 100%;
-  margin: 0 auto;
-  margin-top: 10px;
-  border-left: 0px;
-  border-right: 0px;
-  border-top: 0px;
-  border-bottom: 0px;
-  padding-left: 10px;
-  padding-right: 10px;
-  display: block;
-  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
-  outline: none;
-  resize: none;
-}
