@@ -1,8 +1,11 @@
 # Stan Web Demo
 
-Inspiration: https://github.com/georgestagg/mnist-classifier-blas-wasm/
+This shows how one can use [TinyStan](https://github.com/WardBrian/tinystan)
+to build a WebAssembly version of a Stan model which can be used from the
+browser.
 
-Based on a (currently in-development) version of [TinyStan](https://github.com/WardBrian/tinystan)
+All computation is done locally using the actual Stan implementations
+of automatic differentiation and the No-U-Turn Sampler.
 
-Easiest way to view this is to run `python3 -m http.server 8000 -d www/` and then open `http://localhost:8000/`
-in your browser.
+This was inspired by
+[George Stagg's demos of Fortran in the browser](https://github.com/georgestagg/mnist-classifier-blas-wasm/)
