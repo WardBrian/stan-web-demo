@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react'
-import { Grid } from '@mui/material';
+import { useEffect, useState } from "react";
+import { Grid } from "@mui/material";
 
-import './App.css'
+import "./App.css";
 
-import StanModel from './tinystan';
+import StanModel from "./tinystan";
 
-import PosteriorPlot from './Plotting.js';
-import ConsoleOutput from './Console.js';
-import HighlightCode from './Code.js';
-import DataInput from './Data.js';
+import PosteriorPlot from "./Plotting.js";
+import ConsoleOutput from "./Console.js";
+import HighlightCode from "./Code.js";
+import DataInput from "./Data.js";
 
-import createModule from './tinystan/bernoulli.js';
+import createModule from "./tinystan/bernoulli.js";
 
 const App = () => {
-
   const [stanCode, setStanCode] = useState("// Loading Stan source code...");
   useEffect(() => {
-    fetch("bernoulli.stan").then((response) => response.text()).then(setStanCode);
+    fetch("bernoulli.stan")
+      .then(response => response.text())
+      .then(setStanCode);
   }, []);
 
   const [model, setModel] = useState<StanModel>();
@@ -26,21 +27,23 @@ const App = () => {
 
   const [stanVersion, setStanVersion] = useState("Loading Stan version...");
   useEffect(() => {
-    if (model)
-      setStanVersion("Stan Version " + model.version())
-  }, [model])
+    if (model) setStanVersion("Stan Version " + model.version());
+  }, [model]);
 
-
-  const [data, setData] = useState({ N: 10, y: [0, 1, 0, 0, 0, 0, 0, 0, 0, 1] });
-  const [draws, setDraws] = useState<number[]>([0])
-  const [output, setOutput] = useState("Stan console output will appear here...")
-
+  const [data, setData] = useState({
+    N: 10,
+    y: [0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+  });
+  const [draws, setDraws] = useState<number[]>([0]);
+  const [output, setOutput] = useState(
+    "Stan console output will appear here...",
+  );
 
   return (
     <>
       <h1>Stan Web Demo</h1>
       <div className="card">
-        <Grid container spacing={2} >
+        <Grid container spacing={2}>
           <Grid item xs={7}>
             <HighlightCode code={stanCode} language="stan" />
           </Grid>
@@ -58,22 +61,21 @@ const App = () => {
         >
           Sample
         </button>
-        <br /><br />
+        <br />
+        <br />
         <PosteriorPlot draws={draws} />
         <br />
         <ConsoleOutput output={output} />
 
         <p style={{ fontSize: "0.8rem" }}>
-          <span style={{ float: "left" }}>
-            {stanVersion}
-          </span>
-          <span style={{ float: "right" }} >
-            <a href='https://github.com/WardBrian/stan-web-demo'>(source)</a>
+          <span style={{ float: "left" }}>{stanVersion}</span>
+          <span style={{ float: "right" }}>
+            <a href="https://github.com/WardBrian/stan-web-demo">(source)</a>
           </span>
         </p>
-      </div >
+      </div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

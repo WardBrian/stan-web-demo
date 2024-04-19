@@ -81,11 +81,11 @@ textarea {
   padding-right: 10px;
   box-sizing: border-box;
   display: block;
-  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono",
+    monospace;
   outline: none;
   resize: none;
 }
-
 
 .tooltip {
   position: relative;
@@ -110,7 +110,6 @@ textarea {
   position: absolute;
   z-index: 1;
 }
-
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {

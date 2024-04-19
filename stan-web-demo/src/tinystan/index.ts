@@ -6,6 +6,7 @@ interface WasmModule {
   _tinystan_model_param_names(_0: number): number;
   _tinystan_model_num_free_params(_0: number): number;
   _tinystan_separator_char(): number;
+  // prettier-ignore
   _tinystan_sample(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number, _6: number, _7: number, _8: number, _9: number, _10: number, _11: number, _12: number, _13: number, _14: number, _15: number, _16: number, _17: number, _18: number, _19: number, _20: number, _21: number, _22: number, _23: number, _24: number, _25: number, _26: number, _27: number): number;
   _tinystan_get_error_message(_0: number): number;
   _tinystan_get_error_type(_0: number): number;
@@ -21,27 +22,31 @@ interface WasmModule {
   stdoutText: string;
 }
 
-
 const NULLPTR = 0;
 
 class StanModel {
   private m: WasmModule;
   private callback: ((s: string) => void) | null = null;
 
-  private constructor(m: WasmModule, callback: ((s: string) => void) | null = null) {
+  private constructor(
+    m: WasmModule,
+    callback: ((s: string) => void) | null = null,
+  ) {
     this.m = m;
     this.callback = callback;
   }
 
-  public static async load(createModule: ((proto?: object) => Promise<WasmModule>), printCallback: ((s: string) => void) | null): Promise<StanModel> {
-
-    const Module: { [k: string]: any } = { stdoutText: "" };
+  public static async load(
+    createModule: (proto?: object) => Promise<WasmModule>,
+    printCallback: ((s: string) => void) | null,
+  ): Promise<StanModel> {
+    const Module: { [k: string]: unknown } = { stdoutText: "" };
     if (printCallback !== null) {
-      Module.print = (function (): (args: any[]) => void {
-        return (...args: any[]) => {
-          const text = args.join(' ');
-          Module.stdoutText = Module.stdoutText + text + '\n';
-        }
+      Module.print = (function (): (args: unknown[]) => void {
+        return (...args: unknown[]) => {
+          const text = args.join(" ");
+          Module.stdoutText = Module.stdoutText + text + "\n";
+        };
       })();
     }
     const module = await createModule(Module);
@@ -50,21 +55,24 @@ class StanModel {
 
   // currently assumes a 1-d model and hard codes many arguments.
   // Could easily be extended to support full functionality a.la TinyStan's Python API
-  public sample(data: string, num_chains: number = 4, num_samples: number = 1000): number[] {
-
+  public sample(
+    data: string,
+    num_chains: number = 4,
+    num_samples: number = 1000,
+  ): number[] {
     const seed = Math.floor(Math.random() * 1000000);
 
     // Create the model
     const err_ptr = this.m._malloc(4);
 
-    const data_ptr = this.m._malloc(this.m.lengthBytesUTF8(data) + 1)
+    const data_ptr = this.m._malloc(this.m.lengthBytesUTF8(data) + 1);
     this.m.stringToUTF8(data, data_ptr, this.m.lengthBytesUTF8(data) + 1);
     const model = this.m._tinystan_create_model(data_ptr, seed, err_ptr);
     this.m._free(data_ptr);
 
     if (model == 0) {
       // Get the error code
-      const err_code = this.m.getValue(err_ptr, '*');
+      const err_code = this.m.getValue(err_ptr, "*");
 
       // Get the error message
       const err_msg_ptr = this.m._tinystan_get_error_message(err_code);
@@ -77,7 +85,9 @@ class StanModel {
     }
 
     // Get the parameter names
-    const paramNames = this.m.UTF8ToString(this.m._tinystan_model_param_names(model));
+    const paramNames = this.m.UTF8ToString(
+      this.m._tinystan_model_param_names(model),
+    );
     // Get the number of free parameters
     const n_params = paramNames.split(",").length;
 
@@ -87,9 +97,36 @@ class StanModel {
 
     // Sample from the model
     this.m.stdoutText = "";
-    const result = this.m._tinystan_sample(model, num_chains, NULLPTR, seed, 1, 2.0, num_samples, num_samples, 2 /* diagonal */, NULLPTR,
-      1, 0.8, 0.5, 0.75, 10, 75, 50, 25, 0, 1.0, 0.0, 10, 100,
-      num_chains, out_ptr, n_out, NULLPTR, err_ptr);
+    const result = this.m._tinystan_sample(
+      model,
+      num_chains,
+      NULLPTR,
+      seed,
+      1,
+      2.0,
+      num_samples,
+      num_samples,
+      2 /* diagonal */,
+      NULLPTR,
+      1,
+      0.8,
+      0.5,
+      0.75,
+      10,
+      75,
+      50,
+      25,
+      0,
+      1.0,
+      0.0,
+      10,
+      100,
+      num_chains,
+      out_ptr,
+      n_out,
+      NULLPTR,
+      err_ptr,
+    );
 
     if (this.callback !== null) {
       this.callback(this.m.stdoutText);
@@ -98,7 +135,7 @@ class StanModel {
     // Check for errors
     if (result != 0) {
       // Get the error code
-      const err_code = this.m.getValue(err_ptr, '*');
+      const err_code = this.m.getValue(err_ptr, "*");
 
       // Get the error message
       const err_msg_ptr = this.m._tinystan_get_error_message(err_code);
@@ -114,20 +151,21 @@ class StanModel {
 
     // Calculate the average of theta
 
-    const out_buffer = this.m.HEAPF64.subarray(out_ptr / Float64Array.BYTES_PER_ELEMENT, out_ptr / Float64Array.BYTES_PER_ELEMENT + n_out);
+    const out_buffer = this.m.HEAPF64.subarray(
+      out_ptr / Float64Array.BYTES_PER_ELEMENT,
+      out_ptr / Float64Array.BYTES_PER_ELEMENT + n_out,
+    );
     const x = [];
     for (let i = 0; i < num_chains * num_samples; i++) {
       const elm = out_buffer[i * (n_params + 7) + 7];
       x[i] = elm;
     }
 
-
     // Clean up
     this.m._tinystan_destroy_model(model);
     this.m._free(out_ptr);
 
     return x;
-
   }
 
   public version(): string {
@@ -135,14 +173,17 @@ class StanModel {
     const minor = this.m._malloc(4);
     const patch = this.m._malloc(4);
     this.m._tinystan_stan_version(major, minor, patch);
-    const version = this.m.getValue(major, 'i32') + "." + this.m.getValue(minor, 'i32') + "." + this.m.getValue(patch, 'i32');
+    const version =
+      this.m.getValue(major, "i32") +
+      "." +
+      this.m.getValue(minor, "i32") +
+      "." +
+      this.m.getValue(patch, "i32");
     this.m._free(major);
     this.m._free(minor);
     this.m._free(patch);
     return version;
   }
-
 }
-
 
 export default StanModel;
