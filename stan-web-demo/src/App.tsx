@@ -14,15 +14,21 @@ import createModule from './tinystan/bernoulli.js';
 
 const App = () => {
 
+  const [stanCode, setStanCode] = useState("// Loading Stan source code...");
+  useEffect(() => {
+    fetch("bernoulli.stan").then((response) => response.text()).then(setStanCode);
+  }, []);
+
   const [model, setModel] = useState<StanModel>();
   useEffect(() => {
     StanModel.load(createModule, setOutput).then(setModel);
   }, []);
 
-  const [stanCode, setStanCode] = useState("// Loading Stan source code...");
+  const [stanVersion, setStanVersion] = useState("Loading Stan version...");
   useEffect(() => {
-    fetch("bernoulli.stan").then((response) => response.text()).then(setStanCode);
-  }, []);
+    if (model)
+      setStanVersion("Stan Version " + model.version())
+  }, [model])
 
 
   const [data, setData] = useState({ N: 10, y: [0, 1, 0, 0, 0, 0, 0, 0, 0, 1] });
@@ -34,16 +40,14 @@ const App = () => {
     <>
       <h1>Stan Web Demo</h1>
       <div className="card">
-        <div>
-          <Grid container spacing={2} >
-            <Grid item xs={7}>
-              <HighlightCode code={stanCode} language="stan" />
-            </Grid>
-            <Grid item xs={5}>
-              <DataInput data={data} setData={setData} />
-            </Grid>
+        <Grid container spacing={2} >
+          <Grid item xs={7}>
+            <HighlightCode code={stanCode} language="stan" />
           </Grid>
-        </div>
+          <Grid item xs={5}>
+            <DataInput data={data} setData={setData} />
+          </Grid>
+        </Grid>
 
         <button
           onClick={() => {
@@ -55,17 +59,19 @@ const App = () => {
           Sample
         </button>
         <br /><br />
-        <div>
-          <PosteriorPlot draws={draws} />
-        </div>
+        <PosteriorPlot draws={draws} />
         <br />
-        <div>
-          <ConsoleOutput output={output} />
-        </div>
+        <ConsoleOutput output={output} />
 
-        <p style={{ textAlign: "right", fontSize: "0.8rem" }}>
-          <a href='https://github.com/WardBrian/stan-web-demo'>(source)</a></p>
-      </div>
+        <p style={{ fontSize: "0.8rem" }}>
+          <span style={{ float: "left" }}>
+            {stanVersion}
+          </span>
+          <span style={{ float: "right" }} >
+            <a href='https://github.com/WardBrian/stan-web-demo'>(source)</a>
+          </span>
+        </p>
+      </div >
     </>
   )
 }
