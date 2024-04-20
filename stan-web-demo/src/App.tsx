@@ -42,38 +42,36 @@ const App = () => {
   return (
     <>
       <h1>Stan Web Demo</h1>
-      <div className="card">
-        <Grid container spacing={2}>
-          <Grid item xs={7}>
-            <HighlightCode code={stanCode} language="stan" />
-          </Grid>
-          <Grid item xs={5}>
-            <DataInput data={data} setData={setData} />
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={7}>
+          <HighlightCode code={stanCode} language="stan" />
         </Grid>
+        <Grid item xs={12} md={5}>
+          <DataInput data={data} setData={setData} />
+        </Grid>
+      </Grid>
 
-        <button
-          onClick={() => {
-            if (!model) return;
-            setDraws(model.sample(JSON.stringify(data)));
-          }}
-          disabled={!model ? true : undefined}
-        >
-          Sample
-        </button>
-        <br />
-        <br />
-        <PosteriorPlot draws={draws} />
-        <br />
-        <ConsoleOutput output={output} />
+      <button
+        onClick={() => {
+          if (!model) return;
+          setDraws(model.sample(JSON.stringify(data)));
+        }}
+        disabled={!model ? true : undefined}
+      >
+        Sample
+      </button>
+      <br />
+      <br />
+      <PosteriorPlot draws={draws} />
+      <br />
+      <ConsoleOutput output={output} />
 
-        <p style={{ fontSize: "0.8rem" }}>
-          <span style={{ float: "left" }}>{stanVersion}</span>
-          <span style={{ float: "right" }}>
-            <a href="https://github.com/WardBrian/stan-web-demo">(source)</a>
-          </span>
-        </p>
-      </div>
+      <p style={{ fontSize: "0.8rem" }}>
+        <span style={{ float: "left" }}>{stanVersion}</span>
+        <span style={{ float: "right" }}>
+          <a href="https://github.com/WardBrian/stan-web-demo">(source)</a>
+        </span>
+      </p>
     </>
   );
 };

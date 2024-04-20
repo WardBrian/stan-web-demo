@@ -45,7 +45,7 @@ button {
   transition: border-color 0.25s;
 }
 
-button:hover {
+button:hover:enabled {
   border-color: #646cff;
 }
 
@@ -114,4 +114,12 @@ textarea {
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+pre[class*="language-"],
+code[class*="language-"] {
+  background: white;
+  /* white-space: pre-wrap;
+    overflow: auto;
+    word-break: break-word; */
 }
