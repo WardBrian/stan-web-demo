@@ -55,12 +55,13 @@ export const DataInput = ({
       <p>
         {" "}
         Number of coin flips:&nbsp;
-        <span className="tooltip">
+        <span
+          className="tooltip"
+          title="The number of total coin flips increases our certainty in the
+            posterior prediction"
+          tabIndex={0}
+        >
           {N}
-          <span className="tooltiptext">
-            The number of total coin flips increases our certainty in the
-            posterior prediction
-          </span>
         </span>
       </p>
       <Slider
