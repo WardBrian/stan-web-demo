@@ -5,10 +5,10 @@ import "./App.css";
 
 import StanModel from "./tinystan";
 
-import PosteriorPlot from "./Plotting.js";
-import ConsoleOutput from "./Console.js";
-import HighlightCode from "./Code.js";
-import DataInput from "./Data.js";
+import PosteriorPlot from "./components/Plotting.js";
+import ConsoleOutput from "./components/Console.js";
+import HighlightCode from "./components/Code.js";
+import DataInput from "./components/Data.js";
 
 import createModule from "./tinystan/bernoulli.js";
 
@@ -34,7 +34,7 @@ const App = () => {
     N: 10,
     y: [0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
   });
-  const [draws, setDraws] = useState<number[]>([0]);
+  const [draws, setDraws] = useState<number[]>([]);
   const [output, setOutput] = useState(
     "Stan console output will appear here...",
   );

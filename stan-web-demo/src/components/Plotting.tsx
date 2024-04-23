@@ -14,7 +14,7 @@ const PosteriorPlot = ({ draws }: { draws: number[] }) => {
 
   return (
     <div ref={ref}>
-      {draws.length === 1 ? (
+      {draws.length === 0 ? (
         <Plot
           data={[{ x: [], type: "histogram" }]}
           layout={{
