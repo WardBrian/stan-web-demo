@@ -54,7 +54,7 @@ const App = () => {
       <button
         onClick={() => {
           if (!model) return;
-          setDraws(model.sample(JSON.stringify(data)));
+          setDraws(model.sample(data)[0]);
         }}
         disabled={!model ? true : undefined}
       >
