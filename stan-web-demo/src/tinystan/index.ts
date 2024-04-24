@@ -1,10 +1,17 @@
-type ptr = number;
-type model_ptr = number;
-type cstr = number;
+// Newtype trick to create distinct types for different kinds of pointers
+const brand = Symbol("brand");
+type Brand<T, U> = T & {
+  [brand]: U;
+};
+
+type ptr = Brand<number, "raw pointer">;
+type model_ptr = Brand<number, "model pointer">;
+type error_ptr = Brand<number, "error object pointer">;
+type cstr = Brand<number, "null-terminated char pointer">;
 
 interface WasmModule {
   _malloc(n_bytes: number): ptr;
-  _free(pointer: ptr): void;
+  _free(pointer: ptr | cstr): void;
   _tinystan_create_model(data: cstr, seed: number, err_ptr: ptr): model_ptr;
   _tinystan_destroy_model(model: model_ptr): void;
   _tinystan_model_param_names(model: model_ptr): cstr;
@@ -16,10 +23,10 @@ interface WasmModule {
     adapt:number, delta:number, gamma:number, kappa:number, t0:number, init_buffer:number,
     term_buffer:number, window:number, save_warmup:number, stepsize:number, stepsize_jitter:number,
     max_depth:number, refresh:number, num_threads:number, out:ptr, out_size:number, metric_out:ptr,
-    err_ptr:ptr, ): number;
-  _tinystan_get_error_message(err_ptr: ptr): cstr;
-  _tinystan_get_error_type(err_ptr: ptr): number;
-  _tinystan_destroy_error(err_ptr: ptr): void;
+    err_ptr:ptr): number;
+  _tinystan_get_error_message(err_ptr: error_ptr): cstr;
+  _tinystan_get_error_type(err_ptr: error_ptr): number;
+  _tinystan_destroy_error(err_ptr: error_ptr): void;
   _tinystan_api_version(major: ptr, minor: ptr, patch: ptr): void;
   _tinystan_stan_version(major: ptr, minor: ptr, patch: ptr): void;
   lengthBytesUTF8(str: string): number;
@@ -30,7 +37,8 @@ interface WasmModule {
   stdoutText: string;
 }
 
-const NULLPTR = 0;
+const NULL = 0 as ptr;
+const NULLSTR = 0 as cstr;
 
 export enum HMCMetric {
   UNIT = 0,
@@ -72,8 +80,15 @@ export default class StanModel {
     return new StanModel(module, printCallback);
   }
 
-  private handleError(err_ptr: number): void {
-    const err = this.m.getValue(err_ptr, "*");
+  private encodeString(s: string): cstr {
+    const len = this.m.lengthBytesUTF8(s) + 1;
+    const ptr = this.m._malloc(len) as unknown as cstr;
+    this.m.stringToUTF8(s, ptr, len);
+    return ptr;
+  }
+
+  private handleError(err_ptr: ptr): void {
+    const err = this.m.getValue(err_ptr, "*") as error_ptr;
     const err_msg_ptr = this.m._tinystan_get_error_message(err);
     const err_msg = this.m.UTF8ToString(err_msg_ptr);
     this.m._tinystan_destroy_error(err);
@@ -83,16 +98,17 @@ export default class StanModel {
   private withModel<T>(
     data: string | object,
     seed: number,
-    f: (model: number) => T,
+    f: (model: model_ptr) => T,
   ): T {
     const err_ptr = this.m._malloc(4);
     if (typeof data === "object") {
       data = JSON.stringify(data);
     }
-    const data_ptr = this.m._malloc(this.m.lengthBytesUTF8(data) + 1);
-    this.m.stringToUTF8(data, data_ptr, this.m.lengthBytesUTF8(data) + 1);
+
+    const data_ptr = this.encodeString(data);
     const model = this.m._tinystan_create_model(data_ptr, seed, err_ptr);
     this.m._free(data_ptr);
+
     if (model == 0) {
       this.handleError(err_ptr);
     }
@@ -166,14 +182,14 @@ export default class StanModel {
       const result = this.m._tinystan_sample(
         model,
         num_chains,
-        NULLPTR, // inits
+        NULLSTR, // inits
         seed,
         id,
         init_radius,
         num_warmup,
         num_samples,
         metric.valueOf(),
-        NULLPTR, // init inv metric
+        NULLSTR, // init inv metric
         adapt ? 1 : 0,
         delta,
         gamma,
@@ -190,7 +206,7 @@ export default class StanModel {
         num_threads,
         out_ptr,
         n_out,
-        NULLPTR,
+        NULL,
         err_ptr,
       );
       if (this.printCallback !== null) {
