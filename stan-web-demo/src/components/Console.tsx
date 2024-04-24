@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-const ConsoleOutput = ({ output }: { output: string }) => {
+type ConsoleOutputProps = { output: string };
+
+const ConsoleOutput = ({ output }: ConsoleOutputProps) => {
   const textArea = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     const area = textArea.current;

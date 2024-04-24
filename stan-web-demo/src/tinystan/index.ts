@@ -38,31 +38,36 @@ export enum HMCMetric {
   DIAGONAL = 2,
 }
 
+export type PrintCallback = (s: string) => void;
+
 export default class StanModel {
   private m: WasmModule;
-  private callback: ((s: string) => void) | null = null;
+  private printCallback: PrintCallback | null = null;
 
   private constructor(
     m: WasmModule,
-    callback: ((s: string) => void) | null = null,
+    printCallback: PrintCallback | null = null,
   ) {
     this.m = m;
-    this.callback = callback;
+    this.printCallback = printCallback;
   }
 
   public static async load(
     createModule: (proto?: object) => Promise<WasmModule>,
-    printCallback: ((s: string) => void) | null,
+    printCallback: PrintCallback | null,
   ): Promise<StanModel> {
+    // Create the initial object which will have the rest of the WASM
+    // functions attached to it
+    // See https://emscripten.org/docs/api_reference/module.html
+
     const prototype: { [k: string]: unknown } = { stdoutText: "" };
     if (printCallback !== null) {
-      prototype.print = (function (): (args: unknown[]) => void {
-        return (...args: unknown[]) => {
-          const text = args.join(" ");
-          prototype.stdoutText = prototype.stdoutText + text + "\n";
-        };
-      })();
+      prototype.print = (...args: unknown[]) => {
+        const text = args.join(" ");
+        prototype.stdoutText = prototype.stdoutText + text + "\n";
+      };
     }
+
     const module = await createModule(prototype);
     return new StanModel(module, printCallback);
   }
@@ -188,8 +193,8 @@ export default class StanModel {
         NULLPTR,
         err_ptr,
       );
-      if (this.callback !== null) {
-        this.callback(this.m.stdoutText);
+      if (this.printCallback !== null) {
+        this.printCallback(this.m.stdoutText);
       }
 
       if (result != 0) {
@@ -217,7 +222,7 @@ export default class StanModel {
     });
   }
 
-  public version(): string {
+  public stanVersion(): string {
     const major = this.m._malloc(4);
     const minor = this.m._malloc(4);
     const patch = this.m._malloc(4);

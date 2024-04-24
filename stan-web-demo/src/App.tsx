@@ -1,36 +1,22 @@
 import { useEffect, useState } from "react";
-import { Grid } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 
 import "./App.css";
 
+import PosteriorPlot from "./components/Plotting";
+import ConsoleOutput from "./components/Console";
+import HighlightCode from "./components/Code";
+import DataInput, { BernoulliData } from "./components/Data";
+import Footer from "./components/Footer";
+
 import StanModel from "./tinystan";
-
-import PosteriorPlot from "./components/Plotting.js";
-import ConsoleOutput from "./components/Console.js";
-import HighlightCode from "./components/Code.js";
-import DataInput from "./components/Data.js";
-
 import createModule from "./tinystan/bernoulli.js";
 
 const App = () => {
   const [stanCode, setStanCode] = useState("// Loading Stan source code...");
-  useEffect(() => {
-    fetch("bernoulli.stan")
-      .then(response => response.text())
-      .then(setStanCode);
-  }, []);
-
   const [model, setModel] = useState<StanModel>();
-  useEffect(() => {
-    StanModel.load(createModule, setOutput).then(setModel);
-  }, []);
-
   const [stanVersion, setStanVersion] = useState("Loading Stan version...");
-  useEffect(() => {
-    if (model) setStanVersion("Stan Version " + model.version());
-  }, [model]);
-
-  const [data, setData] = useState({
+  const [data, setData] = useState<BernoulliData>({
     N: 10,
     y: [0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
   });
@@ -38,6 +24,19 @@ const App = () => {
   const [output, setOutput] = useState(
     "Stan console output will appear here...",
   );
+
+  useEffect(() => {
+    fetch("bernoulli.stan")
+      .then(response => response.text())
+      .then(setStanCode);
+  }, []);
+
+  useEffect(() => {
+    StanModel.load(createModule, setOutput).then(model => {
+      setModel(model);
+      setStanVersion(`Stan Version ${model.stanVersion()}`);
+    });
+  }, []);
 
   return (
     <>
@@ -51,27 +50,22 @@ const App = () => {
         </Grid>
       </Grid>
 
-      <button
+      <Button
         onClick={() => {
           if (!model) return;
           setDraws(model.sample(data)[0]);
         }}
+        variant="contained"
         disabled={!model ? true : undefined}
       >
         Sample
-      </button>
-      <br />
-      <br />
+      </Button>
+
       <PosteriorPlot draws={draws} />
-      <br />
+
       <ConsoleOutput output={output} />
 
-      <p style={{ fontSize: "0.8rem" }}>
-        <span style={{ float: "left" }}>{stanVersion}</span>
-        <span style={{ float: "right" }}>
-          <a href="https://github.com/WardBrian/stan-web-demo">(source)</a>
-        </span>
-      </p>
+      <Footer stanVersion={stanVersion} />
     </>
   );
 };

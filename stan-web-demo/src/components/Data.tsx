@@ -10,35 +10,28 @@ const shuffleArray = (array: number[]) => {
   }
 };
 
-export const DataInput = ({
-  data,
-  setData,
-}: {
-  data: { N: number; y: number[] };
-  setData: Dispatch<SetStateAction<{ N: number; y: number[] }>>;
-}) => {
+type CallbackType = Dispatch<SetStateAction<number>>;
+const makeChangeHandler = (callback: CallbackType) => {
+  return (_event: Event, newValue: number | number[], activeThumb: number) => {
+    if (activeThumb === 0) {
+      callback(newValue as number);
+    }
+  };
+};
+
+export type BernoulliData = { N: number; y: number[] };
+
+type DataInputProps = {
+  data: BernoulliData;
+  setData: Dispatch<SetStateAction<BernoulliData>>;
+};
+
+export const DataInput = ({ data, setData }: DataInputProps) => {
   const [N, setN] = useState(10);
-
-  const handleNChanged = (
-    _event: Event,
-    newValue: number | number[],
-    activeThumb: number,
-  ) => {
-    if (activeThumb === 0) {
-      setN(newValue as number);
-    }
-  };
-
   const [k, setK] = useState(2);
-  const handleKChanged = (
-    _event: Event,
-    newValue: number | number[],
-    activeThumb: number,
-  ) => {
-    if (activeThumb === 0) {
-      setK(newValue as number);
-    }
-  };
+
+  const handleNChanged = makeChangeHandler(setN);
+  const handleKChanged = makeChangeHandler(setK);
 
   useEffect(() => {
     const y = Array(k)
