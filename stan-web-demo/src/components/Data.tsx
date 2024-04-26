@@ -61,6 +61,7 @@ export const DataInput = ({ data, setData }: DataInputProps) => {
         defaultValue={10}
         step={1}
         valueLabelDisplay="auto"
+        aria-label="Number of coin flips"
         min={k}
         max={50}
         onChange={handleNChanged}
@@ -71,6 +72,7 @@ export const DataInput = ({ data, setData }: DataInputProps) => {
         step={1}
         valueLabelDisplay="auto"
         marks
+        aria-label="Number of heads"
         min={0}
         max={N}
         onChange={handleKChanged}
