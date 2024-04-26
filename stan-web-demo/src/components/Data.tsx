@@ -10,7 +10,7 @@ const shuffleArray = (array: number[]) => {
   }
 };
 
-type CallbackType = Dispatch<SetStateAction<number>>;
+type CallbackType = (v: number) => void;
 const makeChangeHandler = (callback: CallbackType) => {
   return (_event: Event, newValue: number | number[], activeThumb: number) => {
     if (activeThumb === 0) {
@@ -30,8 +30,8 @@ export const DataInput = ({ data, setData }: DataInputProps) => {
   const [N, setN] = useState(10);
   const [k, setK] = useState(2);
 
-  const handleNChanged = makeChangeHandler(setN);
-  const handleKChanged = makeChangeHandler(setK);
+  const handleNChanged = makeChangeHandler(v => setN(Math.max(v, k)));
+  const handleKChanged = makeChangeHandler(v => setK(Math.min(v, N)));
 
   useEffect(() => {
     const y = Array(k)
@@ -58,23 +58,24 @@ export const DataInput = ({ data, setData }: DataInputProps) => {
         </span>
       </p>
       <Slider
-        defaultValue={10}
+        value={N}
         step={1}
         valueLabelDisplay="auto"
+        marks={[{ value: k }]}
         aria-label="Number of coin flips"
-        min={k}
+        min={0}
         max={50}
         onChange={handleNChanged}
       />
       <p> Number of heads: {k}</p>
       <Slider
-        defaultValue={2}
+        value={k}
         step={1}
         valueLabelDisplay="auto"
-        marks
+        marks={[{ value: N }]}
         aria-label="Number of heads"
         min={0}
-        max={N}
+        max={50}
         onChange={handleKChanged}
       />
     </div>
