@@ -23,7 +23,7 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
 4. Build oneTBB with emscripten. The commands I used were
    ```shell
    $ mkdir build; cd build
-   $ emcmake cmake .. -DCMAKE_CXX_COMPILER=em++ -DCMAKE_C_COMPILER=emcc -DTBB_STRICT=OFF -DCMAKE_CXX_FLAGS=-Wno-unused-command-line-argument -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DBUILD_SHARED_LIBS=ON -DTBB_EXAMPLES=OFF -DTBB_TEST=OFF -DEMSCRIPTEN_WITHOUT_PTHREAD=true
+   $ emcmake cmake .. -DCMAKE_CXX_COMPILER=em++ -DCMAKE_C_COMPILER=emcc -DTBB_STRICT=OFF -DCMAKE_CXX_FLAGS="-fwasm-exceptions -Wno-unused-command-line-argument" -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DBUILD_SHARED_LIBS=ON -DTBB_EXAMPLES=OFF -DTBB_TEST=OFF -DEMSCRIPTEN_WITHOUT_PTHREAD=true
    $ cmake --build .
    ```
    Make note of the path to the folder containing the built `libtbb.a`. For me this is `build/clang_19.0_cxx11_32_relwithdebinfo`
@@ -37,7 +37,8 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
    LDLIBS_TBB ?= -ltbb
    # Functions we want. Can add more, with a prepended _, from tinystan.h
    EXPORTS=_malloc,_free,_tinystan_api_version,_tinystan_create_model,_tinystan_destroy_error,_tinystan_destroy_model,_tinystan_get_error_message,_tinystan_get_error_type,_tinystan_model_num_free_params,_tinystan_model_param_names,_tinystan_sample,_tinystan_separator_char,_tinystan_stan_version
-   CXXFLAGS+=-sNO_DISABLE_EXCEPTION_CATCHING -sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1
+   CXXFLAGS+=-fwasm-exceptions # could also uses -fexceptions which is more compatible, but slower
+   CXXFLAGS+=-sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1
    CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS)-sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
    CXXFLAGS+=-sMODULARIZE -sEXPORT_NAME=createModule -sEXPORT_ES6 -sENVIRONMENT=web
    ```
