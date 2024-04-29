@@ -90,9 +90,10 @@ export default class StanModel {
   private handleError(err_ptr: ptr): void {
     const err = this.m.getValue(err_ptr, "*") as error_ptr;
     const err_msg_ptr = this.m._tinystan_get_error_message(err);
-    const err_msg = this.m.UTF8ToString(err_msg_ptr);
+    const err_msg = "Exception from Stan:\n" + this.m.UTF8ToString(err_msg_ptr);
     this.m._tinystan_destroy_error(err);
-    throw new Error("Exception from Stan:\n" + err_msg);
+    this.printCallback?.(err_msg);
+    throw new Error(err_msg);
   }
 
   private withModel<T>(
