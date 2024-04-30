@@ -13,6 +13,17 @@ export default defineConfig({
       css: false,
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string) => {
+          if (id.includes("plotly")) {
+            return "plotly";
+          }
+        },
+      },
+    },
+  },
   server: {
     host: "127.0.0.1",
   },
