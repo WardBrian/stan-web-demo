@@ -13,7 +13,13 @@ export default defineConfig({
       css: false,
     }),
   ],
+  optimizeDeps: {
+    include: ["plotly.js-histogram-dist"],
+  },
   build: {
+    commonjsOptions:{
+      include:[/plotly.js-histogram-dist/, /node_modules/]
+    },
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {

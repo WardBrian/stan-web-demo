@@ -1,13 +1,14 @@
 import useMeasure from "react-use-measure";
 
-import Plotly from "plotly.js-cartesian-dist";
+import Plotly from "../plotly.js-histogram-dist";
+import type {Layout, Data, Shape } from "plotly.js";
 
 import createPlotlyComponent from "react-plotly.js/factory";
 const Plot = createPlotlyComponent(Plotly);
 
 const average = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
-const defaultLayout: Partial<Plotly.Layout> = {
+const defaultLayout: Partial<Layout> = {
   autosize: true,
   title: "Posterior of Theta",
   xaxis: {
@@ -30,7 +31,7 @@ type PosteriorPlotProps = { draws: number[] };
 const PosteriorPlot = ({ draws }: PosteriorPlotProps) => {
   const [ref, { width }] = useMeasure();
 
-  const histogram: Partial<Plotly.Data> = {
+  const histogram: Partial<Data> = {
     x: draws,
     type: "histogram",
     histnorm: "probability",
@@ -38,7 +39,7 @@ const PosteriorPlot = ({ draws }: PosteriorPlotProps) => {
     name: "Posterior draws",
   };
 
-  const layout: Partial<Plotly.Layout> = { width: width, ...defaultLayout };
+  const layout: Partial<Layout> = { width: width, ...defaultLayout };
 
   if (draws.length === 0) {
     // reasonable default zoom when no data
@@ -47,7 +48,7 @@ const PosteriorPlot = ({ draws }: PosteriorPlotProps) => {
     // add a line for the mean
 
     const avg = average(draws);
-    const meanLine: Partial<Plotly.Shape> = {
+    const meanLine: Partial<Shape> = {
       type: "line",
       x0: avg,
       y0: 0,

@@ -1,0 +1,27 @@
+{
+    "name": "plotly.js-histogram-dist",
+    "version": "2.32.0",
+    "description": "Ready-to-use plotly.js histogram only distributed bundle.",
+    "license": "MIT",
+    "main": "plotly-histogram.js",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/plotly/plotly.js.git"
+    },
+    "bugs": {
+      "url": "https://github.com/plotly/plotly.js/issues"
+    },
+    "author": "Plotly, Inc.",
+    "keywords": [
+      "graphing",
+      "plotting",
+      "data",
+      "visualization",
+      "plotly"
+    ],
+    "files": [
+      "LICENSE",
+      "README.md",
+      "plotly-histogram.js"
+    ]
+  }

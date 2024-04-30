@@ -1809,11 +1809,6 @@ picomatch@^2.3.1:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
-plotly.js-cartesian-dist@^2.31.1:
-  version "2.31.1"
-  resolved "https://registry.yarnpkg.com/plotly.js-cartesian-dist/-/plotly.js-cartesian-dist-2.31.1.tgz#34f6c938571e44d777fae32be7a556969fc0a47c"
-  integrity sha512-PdEhJSCT576dLDE0aAkUeWKaVyqfyJRI/RSjH9ZnPW48npQj2CaEEWI0sFTkhwX5G02ACkpYBT73X7Gd/ZCQOQ==
-
 postcss@^8.4.38:
   version "8.4.38"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.38.tgz#b387d533baf2054288e337066d81c6bee9db9e0e"
