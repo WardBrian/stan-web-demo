@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Slider } from "@mui/material";
+import Slider from "@mui/material/Slider";
 
 const shuffleArray = (array: number[]) => {
   for (let i = array.length - 1; i > 0; i--) {

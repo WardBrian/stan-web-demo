@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Grid } from "@mui/material";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
 
 import "./App.css";
 
