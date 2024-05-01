@@ -47,6 +47,55 @@ export enum HMCMetric {
 
 export type PrintCallback = (s: string) => void;
 
+export interface SamplerParams {
+  data: string | object;
+  num_chains: number;
+  seed: number | null;
+  id: number;
+  init_radius: number;
+  num_warmup: number;
+  num_samples: number;
+  metric: HMCMetric;
+  adapt: boolean;
+  delta: number;
+  gamma: number;
+  kappa: number;
+  t0: number;
+  init_buffer: number;
+  term_buffer: number;
+  window: number;
+  save_warmup: boolean;
+  stepsize: number;
+  stepsize_jitter: number;
+  max_depth: number;
+  refresh: number;
+  num_threads: number;
+}
+
+const defaultSamplerParams: SamplerParams = {
+  data: "",
+  num_chains: 4,
+  seed: null,
+  id: 1,
+  init_radius: 2.0,
+  num_warmup: 1000,
+  num_samples: 1000,
+  metric: HMCMetric.DIAGONAL,
+  adapt: true,
+  delta: 0.8,
+  gamma: 0.05,
+  kappa: 0.75,
+  t0: 10,
+  init_buffer: 75,
+  term_buffer: 50,
+  window: 25,
+  save_warmup: false,
+  stepsize: 1.0,
+  stepsize_jitter: 0.0,
+  max_depth: 10,
+  refresh: 100,
+  num_threads: -1,
+};
 
 export default class StanModel {
   private m: WasmModule;
@@ -130,30 +179,32 @@ export default class StanModel {
   // - inits
   // - init inv metric
   // - save_metric
-  public sample(
-    data: string | object = "",
-    num_chains: number = 4,
-    seed: number | null = null,
-    id: number = 1,
-    init_radius: number = 2.0,
-    num_warmup: number = 1000,
-    num_samples: number = 1000,
-    metric: HMCMetric = HMCMetric.DIAGONAL,
-    adapt: boolean = true,
-    delta: number = 0.8,
-    gamma: number = 0.05,
-    kappa: number = 0.75,
-    t0: number = 10,
-    init_buffer: number = 75,
-    term_buffer: number = 50,
-    window: number = 25,
-    save_warmup: boolean = false,
-    stepsize: number = 1.0,
-    stepsize_jitter: number = 0.0,
-    max_depth: number = 10,
-    refresh: number = 100,
-    num_threads: number = -1,
-  ): number[][] {
+  public sample(p: Partial<SamplerParams>): number[][] {
+    const {
+      data,
+      num_chains,
+      seed,
+      id,
+      init_radius,
+      num_warmup,
+      num_samples,
+      metric,
+      adapt,
+      delta,
+      gamma,
+      kappa,
+      t0,
+      init_buffer,
+      term_buffer,
+      window,
+      save_warmup,
+      stepsize,
+      stepsize_jitter,
+      max_depth,
+      refresh,
+      num_threads,
+    } = { ...defaultSamplerParams, ...p };
+
     if (num_chains < 1) {
       throw new Error("num_chains must be at least 1");
     }
@@ -164,11 +215,12 @@ export default class StanModel {
       throw new Error("num_samples must be at least 1");
     }
 
-    if (seed === null) {
-      seed = Math.floor(Math.random() * (2 ^ 32));
+    let seed_ = seed;
+    if (seed_ === null) {
+      seed_ = Math.floor(Math.random() * (2 ^ 32));
     }
 
-    return this.withModel(data, seed, model => {
+    return this.withModel(data, seed_, model => {
       // Get the parameter names
       const paramNames = this.m.UTF8ToString(
         this.m._tinystan_model_param_names(model),
@@ -189,7 +241,7 @@ export default class StanModel {
         model,
         num_chains,
         NULLSTR, // inits
-        seed,
+        seed_,
         id,
         init_radius,
         num_warmup,

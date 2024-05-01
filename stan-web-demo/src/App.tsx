@@ -54,7 +54,7 @@ const App = () => {
       <Button
         onClick={() => {
           if (!model) return;
-          setDraws(model.sample(data)[0]);
+          setDraws(model.sample({ data })[0]);
         }}
         variant="contained"
         disabled={!model ? true : undefined}
