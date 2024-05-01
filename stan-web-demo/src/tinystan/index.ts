@@ -147,7 +147,7 @@ export default class StanModel {
     stepsize_jitter: number = 0.0,
     max_depth: number = 10,
     refresh: number = 100,
-    num_threads: number = -1,
+    num_threads: number = navigator.hardwareConcurrency || 1,
   ): number[][] {
     if (num_chains < 1) {
       throw new Error("num_chains must be at least 1");
