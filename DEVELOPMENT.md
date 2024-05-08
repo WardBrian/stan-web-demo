@@ -16,7 +16,7 @@ and `bernoulli.wasm` files in `src/tinystan`.
 The following steps should get you up and running:
 
 1. Install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
-2. Download a copy of [TinyStan](https://github.com/WardBrian/tinystan) (C-wrappers around Stan's C++ interfaces)
+2. Download a copy of [TinyStan](https://github.com/WardBrian/tinystan) (C-wrappers around Stan's C++ interfaces). Clone the repository using the --recursive flag in order to get the submodules.
 3. Download a recent version of [Intel's oneTBB library](https://github.com/oneapi-src/oneTBB). At the time of writing,
 no released version will work with Stan and Emscripten, so commit `4a87ca1` or newer must be used. This is expected to be in the next release
 (either `2021.12.1` or `2021.13.0`)
@@ -39,7 +39,7 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
    EXPORTS=_malloc,_free,_tinystan_api_version,_tinystan_create_model,_tinystan_destroy_error,_tinystan_destroy_model,_tinystan_get_error_message,_tinystan_get_error_type,_tinystan_model_num_free_params,_tinystan_model_param_names,_tinystan_sample,_tinystan_separator_char,_tinystan_stan_version
    CXXFLAGS+=-fwasm-exceptions # could also uses -fexceptions which is more compatible, but slower
    CXXFLAGS+=-sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1
-   CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS)-sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
+   CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS) -sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
    CXXFLAGS+=-sMODULARIZE -sEXPORT_NAME=createModule -sEXPORT_ES6 -sENVIRONMENT=web
    ```
 6. Build the model. The easiest way to do this is currently to add this snippet to the bottom of the TinyStan `Makefile`

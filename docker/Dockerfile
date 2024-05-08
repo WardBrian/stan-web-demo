@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     make
 
 # Clone the TinyStan repository
-RUN git clone https://github.com/WardBrian/tinystan.git
+RUN git clone --recursive https://github.com/WardBrian/tinystan.git
 
 # Clone the oneTBB library and checkout the specific commit
 RUN git clone https://github.com/oneapi-src/oneTBB.git && \
@@ -38,8 +38,9 @@ COPY make/local /app/tinystan/make/local
 # Build the model
 RUN cd tinystan && \
     echo "\n%.js : %.o \$(TINYSTAN_O) \$(SUNDIALS_TARGETS) \$(MPI_TARGETS) \$(TBB_TARGETS)\n\t\$(LINK.cpp) -lm -o \$(patsubst %.o, %.js, \$(subst \\,/,\$<)) \$(subst \\,/,\$*.o) \$(TINYSTAN_O) \$(LDLIBS) \$(SUNDIALS_TARGETS) \$(MPI_TARGETS) \$(TBB_TARGETS)" >> Makefile
-    # emmake make test_models/bernoulli/bernoulli.js -j2
 
-# # Copy the built files to the desired location
-# RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
-#     cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
+RUN cd tinystan && emmake make test_models/bernoulli/bernoulli.js -j2
+
+# Copy the built files to the desired location
+RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
+    cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
