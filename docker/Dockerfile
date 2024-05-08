@@ -41,6 +41,6 @@ RUN cd tinystan && \
 
 RUN cd tinystan && emmake make test_models/bernoulli/bernoulli.js -j2
 
-# Copy the built files to the desired location
-RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
-    cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
+# # Copy the built files to the desired location
+# RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
+#     cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
