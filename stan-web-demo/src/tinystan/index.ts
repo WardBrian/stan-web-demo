@@ -34,7 +34,6 @@ interface WasmModule {
   stringToUTF8(str: string, outPtr: cstr, maxBytesToWrite: number): number;
   getValue(ptr: number, type: string): number;
   HEAPF64: Float64Array;
-  stdoutText: string;
 }
 
 const NULL = 0 as ptr;
@@ -48,16 +47,20 @@ export enum HMCMetric {
 
 export type PrintCallback = (s: string) => void;
 
+
 export default class StanModel {
   private m: WasmModule;
   private printCallback: PrintCallback | null = null;
+  private stdoutHolder: { text: string };
 
   private constructor(
     m: WasmModule,
     printCallback: PrintCallback | null = null,
+    stdoutHolder: { text: string },
   ) {
     this.m = m;
     this.printCallback = printCallback;
+    this.stdoutHolder = stdoutHolder;
   }
 
   public static async load(
@@ -68,16 +71,18 @@ export default class StanModel {
     // functions attached to it
     // See https://emscripten.org/docs/api_reference/module.html
 
-    const prototype: { [k: string]: unknown } = { stdoutText: "" };
+    const stdoutHolder = { text: "" };
+
+    const prototype: { [k: string]: unknown } = {};
     if (printCallback !== null) {
       prototype.print = (...args: unknown[]) => {
         const text = args.join(" ");
-        prototype.stdoutText = prototype.stdoutText + text + "\n";
+        stdoutHolder.text = stdoutHolder.text + text + "\n";
       };
     }
 
     const module = await createModule(prototype);
-    return new StanModel(module, printCallback);
+    return new StanModel(module, printCallback, stdoutHolder);
   }
 
   private encodeString(s: string): cstr {
@@ -178,7 +183,7 @@ export default class StanModel {
       const out_ptr = this.m._malloc(n_out * Float64Array.BYTES_PER_ELEMENT);
 
       // Sample from the model
-      this.m.stdoutText = "";
+      this.stdoutHolder.text = "";
       const err_ptr = this.m._malloc(4);
       const result = this.m._tinystan_sample(
         model,
@@ -211,7 +216,7 @@ export default class StanModel {
         err_ptr,
       );
       if (this.printCallback !== null) {
-        this.printCallback(this.m.stdoutText);
+        this.printCallback(this.stdoutHolder.text);
       }
 
       if (result != 0) {
