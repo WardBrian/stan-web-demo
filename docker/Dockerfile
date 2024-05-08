@@ -1,5 +1,5 @@
 # Dockerfile
-FROM emscripten/emsdk:3.1.59
+FROM emscripten/emsdk:3.1.59 as builder
 
 # Set the working directory
 WORKDIR /app
@@ -41,9 +41,8 @@ COPY make/js /app/tinystan/make/js
 # Build the model
 RUN cd tinystan && \
     echo 'include make/js' >> Makefile && \
-    emmake make test_models/bernoulli/bernoulli.js -j2
-    && emstrip test_models/bernoulli/bernoulli.wasm
+    emmake make test_models/bernoulli/bernoulli.js -j2 && \
+    emstrip test_models/bernoulli/bernoulli.wasm
 
-# Copy the built files to the desired location
-RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
-    cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan 
+FROM scratch
+COPY --from=builder /app/tinystan/test_models/bernoulli/bernoulli.js /app/tinystan/test_models/bernoulli/bernoulli.wasm /
