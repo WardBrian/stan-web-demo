@@ -13,6 +13,9 @@ $ yarn build # build production website to folder ./dist/
 More interesting is how to (re-)build the `bernoulli.js`
 and `bernoulli.wasm` files in `src/tinystan`.
 
+This can be done in a containerized way by running
+`cd docker; docker build . --output ../stan-web-demo/src/tinystan`
+
 The following steps should get you up and running:
 
 1. Install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
@@ -39,13 +42,13 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
    EXPORTS=_malloc,_free,_tinystan_api_version,_tinystan_create_model,_tinystan_destroy_error,_tinystan_destroy_model,_tinystan_get_error_message,_tinystan_get_error_type,_tinystan_model_num_free_params,_tinystan_model_param_names,_tinystan_sample,_tinystan_separator_char,_tinystan_stan_version
    CXXFLAGS+=-fwasm-exceptions # could also uses -fexceptions which is more compatible, but slower
    CXXFLAGS+=-sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1
-   CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS)-sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
+   CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS) -sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
    CXXFLAGS+=-sMODULARIZE -sEXPORT_NAME=createModule -sEXPORT_ES6 -sENVIRONMENT=web
    ```
 6. Build the model. The easiest way to do this is currently to add this snippet to the bottom of the TinyStan `Makefile`
    ```makefile
    %.js : %.o $(TINYSTAN_O) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
-	$(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \,/,$<)) $(subst \,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
+	  $(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \,/,$<)) $(subst \,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
    ```
    And then running `emmake make test_models/bernoulli/bernoulli.js -j2`
 7. Copy `test_models/bernoulli/bernoulli.js` and `test_models/bernoulli/bernoulli.wasm` to `src/tinystan`
