@@ -13,6 +13,9 @@ $ yarn build # build production website to folder ./dist/
 More interesting is how to (re-)build the `bernoulli.js`
 and `bernoulli.wasm` files in `src/tinystan`.
 
+This can be done in a containerized way by running
+`cd docker; docker build . --output ../stan-web-demo/src/tinystan`
+
 The following steps should get you up and running:
 
 1. Install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
