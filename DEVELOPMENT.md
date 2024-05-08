@@ -46,6 +46,8 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
    ```makefile
    %.js : %.o $(TINYSTAN_O) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
 	$(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \,/,$<)) $(subst \,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
+   %.js : %.o $(TINYSTAN_O) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
+   $(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \,/,$<)) $(subst \,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
    ```
    And then running `emmake make test_models/bernoulli/bernoulli.js -j2`
 7. Copy `test_models/bernoulli/bernoulli.js` and `test_models/bernoulli/bernoulli.wasm` to `src/tinystan`

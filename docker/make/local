@@ -1,4 +1,3 @@
-makefile
 # use our wasm-friendly TBB, not Stan's vendored version
 TBB_INTERFACE_NEW=1
 TBB_INC=$(TBB_FROM_STEP_3)/include/ # CHANGE THIS

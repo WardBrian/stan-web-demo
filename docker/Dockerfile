@@ -37,9 +37,9 @@ COPY make/local /app/tinystan/make/local
 
 # Build the model
 RUN cd tinystan && \
-    echo "\n%.js : %.o $(TINYSTAN_O) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)\n\t$(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \\,/,$<)) $(subst \\,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)" >> Makefile && \
-    emmake make test_models/bernoulli/bernoulli.js -j2
+    echo "\n%.js : %.o \$(TINYSTAN_O) \$(SUNDIALS_TARGETS) \$(MPI_TARGETS) \$(TBB_TARGETS)\n\t\$(LINK.cpp) -lm -o \$(patsubst %.o, %.js, \$(subst \\,/,\$<)) \$(subst \\,/,\$*.o) \$(TINYSTAN_O) \$(LDLIBS) \$(SUNDIALS_TARGETS) \$(MPI_TARGETS) \$(TBB_TARGETS)" >> Makefile
+    # emmake make test_models/bernoulli/bernoulli.js -j2
 
-# Copy the built files to the desired location
-RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
-    cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
+# # Copy the built files to the desired location
+# RUN cp tinystan/test_models/bernoulli/bernoulli.js src/tinystan && \
+#     cp tinystan/test_models/bernoulli/bernoulli.wasm src/tinystan
