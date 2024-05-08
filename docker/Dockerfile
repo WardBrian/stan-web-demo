@@ -20,15 +20,15 @@ RUN git clone https://github.com/oneapi-src/oneTBB.git && \
 
 # Build oneTBB with emscripten
 RUN mkdir oneTBB/build && cd oneTBB/build && \
-    emcmake cmake .. && \
-    -DCMAKE_CXX_COMPILER=em++ && \
-    -DCMAKE_C_COMPILER=emcc && \
-    -DTBB_STRICT=OFF && \
-    -DCMAKE_CXX_FLAGS="-fwasm-exceptions -Wno-unused-command-line-argument" && \
-    -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON && \
-    -DBUILD_SHARED_LIBS=ON && \
-    -DTBB_EXAMPLES=OFF && \
-    -DTBB_TEST=OFF && \
+    emcmake cmake .. \
+    -DCMAKE_CXX_COMPILER=em++ \
+    -DCMAKE_C_COMPILER=emcc \
+    -DTBB_STRICT=OFF \
+    -DCMAKE_CXX_FLAGS="-fwasm-exceptions -Wno-unused-command-line-argument" \
+    -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    -DTBB_EXAMPLES=OFF \
+    -DTBB_TEST=OFF \
     -DEMSCRIPTEN_WITHOUT_PTHREAD=true && \
     cmake --build .
 
