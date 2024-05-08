@@ -12,6 +12,10 @@ import Footer from "./components/Footer";
 
 import StanModel from "./tinystan";
 import createModule from "./tinystan/bernoulli.js";
+import TestComponent from "./TestComponent.js";
+
+const queryParams = new URLSearchParams(window.location.search);
+const testMode = queryParams.get("test") === "1";
 
 const App = () => {
   const [stanCode, setStanCode] = useState("// Loading Stan source code...");
@@ -38,6 +42,12 @@ const App = () => {
       setStanVersion(`Stan Version ${model.stanVersion()}`);
     });
   }, []);
+
+  if (testMode) {
+    return (
+      <TestComponent />
+    )
+  }
 
   return (
     <>

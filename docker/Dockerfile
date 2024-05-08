@@ -44,5 +44,14 @@ RUN cd tinystan && \
     emmake make test_models/bernoulli/bernoulli.js -j2 && \
     emstrip test_models/bernoulli/bernoulli.wasm
 
-FROM scratch
-COPY --from=builder /app/tinystan/test_models/bernoulli/bernoulli.js /app/tinystan/test_models/bernoulli/bernoulli.wasm /
+# FROM scratch
+# COPY --from=builder /app/tinystan/test_models/bernoulli/bernoulli.js /app/tinystan/test_models/bernoulli/bernoulli.wasm /
+
+RUN pip install fastapi
+RUN pip install uvicorn
+COPY stan-wasm-server /stan-wasm-server
+WORKDIR /stan-wasm-server
+
+ENV SWS_PASSCODE=1234
+ENV TINYSTAN_DIR=/app/tinystan
+CMD ["bash", "run.sh"]
