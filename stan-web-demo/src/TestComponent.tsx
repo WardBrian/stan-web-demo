@@ -89,11 +89,10 @@ const TestComponent: FunctionComponent = () => {
         <div>
             <h1>WASM Compile Test</h1>
             <pre>Instructions:</pre>
-            <pre>Run the docker image:</pre>
+            <pre>Run the docker container for the server:</pre>
 
-            <pre>cd docker</pre>
-            <pre>docker build -t stan-web-demo .</pre>
-            <pre>docker run -p 8083:8080 -it stan-web-demo</pre>
+            <pre>docker run -p 8083:8000 -it magland/stan-wasm-server:latest</pre>
+
             <button onClick={handleClick}>Then click me</button>
             <p>{statusMessage}</p>
         </div>
