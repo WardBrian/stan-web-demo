@@ -10,3 +10,4 @@ CXXFLAGS+=-fwasm-exceptions # could also uses -fexceptions which is more compati
 CXXFLAGS+=-sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1
 CXXFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS) -sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
 CXXFLAGS+=-sMODULARIZE -sEXPORT_NAME=createModule -sEXPORT_ES6 -sENVIRONMENT=web
+CXXFLAGS+=-g
