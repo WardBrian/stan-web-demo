@@ -91,7 +91,7 @@ const TestComponent: FunctionComponent = () => {
             <pre>Instructions:</pre>
             <pre>Run the docker container for the server:</pre>
 
-            <pre>docker run -p 8083:8000 -it magland/stan-wasm-server:latest</pre>
+            <pre>docker run -p 8083:8080 -it magland/stan-wasm-server:latest</pre>
 
             <button onClick={handleClick}>Then click me</button>
             <p>{statusMessage}</p>

@@ -168,6 +168,8 @@ async def run_job(job_id: str):
             raise Exception(f'Failed to compile model: exit code {process.returncode}')
         if not os.path.exists(f'{model_dir}/main.js') or not os.path.exists(f'{model_dir}/main.wasm'):
             raise Exception('Failed to compile model: missing main.js or main.wasm')
+        os.system(f"cp {model_dir}/main.js {job_dir}/main.js")
+        os.system(f"cp {model_dir}/main.wasm {job_dir}/main.wasm")
     except Exception as e:
         with open(f"{job_dir}/log.txt", "w") as log_file:
             log_file.write(str(e))
