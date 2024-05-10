@@ -13,6 +13,12 @@ import Footer from "./components/Footer";
 import StanModel from "./tinystan";
 import createModule from "./tinystan/bernoulli.js";
 
+const stdoutHolder = { text: "" };
+const printCallback = (...args: unknown[]) => {
+  const text = args.join(" ");
+  stdoutHolder.text = stdoutHolder.text + text + "\n";
+};
+
 const App = () => {
   const [stanCode, setStanCode] = useState("// Loading Stan source code...");
   const [model, setModel] = useState<StanModel>();
@@ -33,7 +39,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    StanModel.load(createModule, setOutput).then(model => {
+    StanModel.load(createModule, printCallback).then(model => {
       setModel(model);
       setStanVersion(`Stan Version ${model.stanVersion()}`);
     });
@@ -54,7 +60,9 @@ const App = () => {
       <Button
         onClick={() => {
           if (!model) return;
+          stdoutHolder.text = "";
           setDraws(model.sample({ data })[0]);
+          setOutput(stdoutHolder.text);
         }}
         variant="contained"
         disabled={!model ? true : undefined}

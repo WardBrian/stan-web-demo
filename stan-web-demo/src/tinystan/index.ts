@@ -99,17 +99,11 @@ const defaultSamplerParams: SamplerParams = {
 
 export default class StanModel {
   private m: WasmModule;
-  private printCallback: PrintCallback | null = null;
-  private stdoutHolder: { text: string };
+  private printCallback: PrintCallback | null;
 
-  private constructor(
-    m: WasmModule,
-    printCallback: PrintCallback | null = null,
-    stdoutHolder: { text: string },
-  ) {
+  private constructor(m: WasmModule, pc: PrintCallback | null) {
     this.m = m;
-    this.printCallback = printCallback;
-    this.stdoutHolder = stdoutHolder;
+    this.printCallback = pc;
   }
 
   public static async load(
@@ -119,19 +113,10 @@ export default class StanModel {
     // Create the initial object which will have the rest of the WASM
     // functions attached to it
     // See https://emscripten.org/docs/api_reference/module.html
-
-    const stdoutHolder = { text: "" };
-
-    const prototype: { [k: string]: unknown } = {};
-    if (printCallback !== null) {
-      prototype.print = (...args: unknown[]) => {
-        const text = args.join(" ");
-        stdoutHolder.text = stdoutHolder.text + text + "\n";
-      };
-    }
+    const prototype = { print: printCallback };
 
     const module = await createModule(prototype);
-    return new StanModel(module, printCallback, stdoutHolder);
+    return new StanModel(module, printCallback);
   }
 
   private encodeString(s: string): cstr {
@@ -235,7 +220,6 @@ export default class StanModel {
       const out_ptr = this.m._malloc(n_out * Float64Array.BYTES_PER_ELEMENT);
 
       // Sample from the model
-      this.stdoutHolder.text = "";
       const err_ptr = this.m._malloc(4);
       const result = this.m._tinystan_sample(
         model,
@@ -267,9 +251,6 @@ export default class StanModel {
         NULL,
         err_ptr,
       );
-      if (this.printCallback !== null) {
-        this.printCallback(this.stdoutHolder.text);
-      }
 
       if (result != 0) {
         this.handleError(err_ptr);
