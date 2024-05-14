@@ -61,7 +61,7 @@ const App = () => {
         onClick={() => {
           if (!model) return;
           stdoutHolder.text = "";
-          setDraws(model.sample({ data })[0]);
+          setDraws(model.sample({ data }).draws[7]);
           setOutput(stdoutHolder.text);
         }}
         variant="contained"
