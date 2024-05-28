@@ -10,13 +10,10 @@ RUN apt-get update && apt-get install -y \
     cmake \
     make
 
-# Clone the TinyStan repository
-RUN git clone https://github.com/WardBrian/tinystan.git --recursive --shallow-submodules --depth 1
-
 # Clone the oneTBB library and checkout the specific commit
 RUN git clone https://github.com/oneapi-src/oneTBB.git && \
     cd oneTBB && \
-    git checkout 4a87ca1
+    git checkout 4a87ca1cc562072d1f5bff3d2e12b0b143ecbeec
 
 # Build oneTBB with emscripten
 RUN mkdir oneTBB/build && cd oneTBB/build && \
@@ -30,9 +27,16 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     -DTBB_EXAMPLES=OFF \
     -DTBB_TEST=OFF \
     -DEMSCRIPTEN_WITHOUT_PTHREAD=true \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/app/oneTBB/install/ && \
-    cmake --build . && \
+    cmake --build . -j4 && \
     cmake --install .
+
+# Clone the TinyStan repository
+RUN git clone https://github.com/WardBrian/tinystan.git --recursive && \
+    cd tinystan && \
+    git checkout f87c75858dcd9c3a944198b44f80cc91d249e7eb && \
+    git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
 COPY make/local /app/tinystan/make/local
@@ -41,7 +45,7 @@ COPY make/js /app/tinystan/make/js
 # Build the model
 RUN cd tinystan && \
     echo 'include make/js' >> Makefile && \
-    emmake make test_models/bernoulli/bernoulli.js -j2 && \
+    emmake make test_models/bernoulli/bernoulli.js -j4 && \
     emstrip test_models/bernoulli/bernoulli.wasm
 
 FROM scratch
