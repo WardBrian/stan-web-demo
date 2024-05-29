@@ -22,7 +22,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add stan-web-demo/src/tinystan/
           git commit -m "Rebuild Stan WebAssembly"
-          git push origin HEAD:rebuild --force-with-lease
+          git push origin HEAD:rebuild --force
       - name: Open PR
         run: gh pr create --base main --head rebuild --title "Rebuild Stan WebAssembly" --body "Rebuilt the WebAssembly files"
         env:
