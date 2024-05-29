@@ -35,17 +35,15 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
 # Clone the TinyStan repository
 RUN git clone https://github.com/WardBrian/tinystan.git --recursive && \
     cd tinystan && \
-    git checkout f87c75858dcd9c3a944198b44f80cc91d249e7eb && \
+    git checkout e1e675ea21873e3365bb0d54a843f4c0f54bf6a8 && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
-COPY make/local /app/tinystan/make/local
-COPY make/js /app/tinystan/make/js
+COPY Makefile.local.inc /app/tinystan/make/local
 
 # Build the model
 RUN cd tinystan && \
-    echo 'include make/js' >> Makefile && \
-    emmake make test_models/bernoulli/bernoulli.js -j4 && \
+    emmake make test_models/bernoulli/bernoulli.js -j$(nproc) && \
     emstrip test_models/bernoulli/bernoulli.wasm
 
 FROM scratch

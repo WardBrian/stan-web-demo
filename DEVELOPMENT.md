@@ -14,7 +14,7 @@ More interesting is how to (re-)build the `bernoulli.js`
 and `bernoulli.wasm` files in `src/tinystan`.
 
 This can be done in a containerized way by running
-`cd docker; docker build . --output ../stan-web-demo/src/tinystan`
+`docker build ./build/ --output ./stan-web-demo/src/tinystan/`
 
 The following steps should get you up and running:
 
@@ -46,10 +46,5 @@ no released version will work with Stan and Emscripten, so commit `4a87ca1` or n
    EXPORTS=_malloc,_free,_tinystan_api_version,_tinystan_create_model,_tinystan_destroy_error,_tinystan_destroy_model,_tinystan_get_error_message,_tinystan_get_error_type,_tinystan_model_num_free_params,_tinystan_model_param_names,_tinystan_sample,_tinystan_separator_char,_tinystan_stan_version
    LDFLAGS+=-sEXPORTED_FUNCTIONS=$(EXPORTS) -sEXPORTED_RUNTIME_METHODS=stringToUTF8,getValue,UTF8ToString,lengthBytesUTF8
    ```
-6. Build the model. The easiest way to do this is currently to add this snippet to the bottom of the TinyStan `Makefile`
-   ```makefile
-   %.js : %.o $(TINYSTAN_O) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
-	  $(LINK.cpp) -lm -o $(patsubst %.o, %.js, $(subst \,/,$<)) $(subst \,/,$*.o) $(TINYSTAN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)
-   ```
-   And then running `emmake make test_models/bernoulli/bernoulli.js -j2`
+6. Build the model by running `emmake make test_models/bernoulli/bernoulli.js -j2`
 7. Copy `test_models/bernoulli/bernoulli.js` and `test_models/bernoulli/bernoulli.wasm` to `src/tinystan`
