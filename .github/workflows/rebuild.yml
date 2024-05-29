@@ -1,0 +1,29 @@
+name: Build Stan WebAssembly
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: docker build ./build/ --output ./stan-web-demo/src/tinystan/
+      - name: Commit
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add stan-web-demo/src/tinystan/
+          git commit -m "Rebuild Stan WebAssembly"
+          git push origin HEAD:rebuild --force-with-lease
+      - name: Open PR
+        run: gh pr create --base main --head rebuild --title "Rebuild Stan WebAssembly" --body "Rebuilt the WebAssembly files"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
