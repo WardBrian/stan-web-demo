@@ -10,14 +10,11 @@ import HighlightCode from "./components/Code";
 import DataInput, { BernoulliData } from "./components/Data";
 import Footer from "./components/Footer";
 
-import StanModel from "./tinystan";
-import createModule from "./tinystan/bernoulli.js";
+import StanModel from "tinystan";
+import { printCallbackSponge } from "tinystan/util";
+import createModule from "./model/bernoulli.js";
 
-const stdoutHolder = { text: "" };
-const printCallback = (...args: unknown[]) => {
-  const text = args.join(" ");
-  stdoutHolder.text = stdoutHolder.text + text + "\n";
-};
+const { printCallback, getStdout, clearStdout } = printCallbackSponge();
 
 const App = () => {
   const [stanCode, setStanCode] = useState("// Loading Stan source code...");
@@ -60,9 +57,9 @@ const App = () => {
       <Button
         onClick={() => {
           if (!model) return;
-          stdoutHolder.text = "";
+          clearStdout();
           setDraws(model.sample({ data }).draws[7]);
-          setOutput(stdoutHolder.text);
+          setOutput(getStdout());
         }}
         variant="contained"
         disabled={!model ? true : undefined}

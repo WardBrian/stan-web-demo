@@ -11,10 +11,10 @@ $ yarn build # build production website to folder ./dist/
 ## Building the TinyStan module
 
 More interesting is how to (re-)build the `bernoulli.js`
-and `bernoulli.wasm` files in `src/tinystan`.
+and `bernoulli.wasm` files in `src/model`.
 
 This can be done in a containerized way by running
-`docker build ./build/ --output ./stan-web-demo/src/tinystan/`
+`docker build ./build/ --output ./stan-web-demo/src/model/`
 
 The following steps should get you up and running:
 

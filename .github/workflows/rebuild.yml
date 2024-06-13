@@ -15,12 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: docker build ./build/ --output ./stan-web-demo/src/tinystan/
+        run: docker build ./build/ --output ./stan-web-demo/src/model/
       - name: Commit
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add stan-web-demo/src/tinystan/
+          git add stan-web-demo/src/model/
           git commit -m "Rebuild Stan WebAssembly"
           git push origin HEAD:rebuild --force
       - name: Open PR

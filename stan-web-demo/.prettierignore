@@ -1,2 +1,2 @@
-src/tinystan/bernoulli.js
+src/model/bernoulli.js
 dist/
