@@ -20,9 +20,8 @@ The following steps should get you up and running:
 
 1. Install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
 2. Download a copy of [TinyStan](https://github.com/WardBrian/tinystan) (C-wrappers around Stan's C++ interfaces)
-3. Download a recent version of [Intel's oneTBB library](https://github.com/oneapi-src/oneTBB). At the time of writing,
-no released version will work with Stan and Emscripten, so commit `4a87ca1` or newer must be used. This is expected to be in the next release
-(either `2021.12.1` or `2021.13.0`)
+3. Download a recent version of [Intel's oneTBB library](https://github.com/oneapi-src/oneTBB). It must be at
+   least version `2021.13.0`
 4. Build oneTBB with emscripten. The commands I used were
    ```shell
    $ mkdir build; cd build
