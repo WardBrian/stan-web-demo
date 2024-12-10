@@ -1,5 +1,5 @@
 # Dockerfile
-FROM emscripten/emsdk:3.1.59 AS builder
+FROM emscripten/emsdk:3.1.73 AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     tar
 
 # Download and extract oneTBB
-RUN wget https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.13.0.tar.gz && \
+RUN wget https://github.com/uxlfoundation/oneTBB/archive/refs/tags/v2021.13.0.tar.gz && \
     tar -xvf v2021.13.0.tar.gz && \
     mv oneTBB-2021.13.0 oneTBB
 
@@ -37,7 +37,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
 # Clone the TinyStan repository
 RUN git clone https://github.com/WardBrian/tinystan.git --recursive && \
     cd tinystan && \
-    git checkout e1e675ea21873e3365bb0d54a843f4c0f54bf6a8 && \
+    git checkout 28e4156837260d8e752dfc50c00fbe2409236c11 && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
