@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     tar
 
-# Download and extract oneTBB
+# Clone the oneTBB library and checkout the specific commit
 RUN wget https://github.com/uxlfoundation/oneTBB/archive/refs/tags/v2021.13.0.tar.gz && \
     tar -xvf v2021.13.0.tar.gz && \
     mv oneTBB-2021.13.0 oneTBB
@@ -30,15 +30,14 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     -DTBB_EXAMPLES=OFF \
     -DTBB_TEST=OFF \
     -DEMSCRIPTEN_WITHOUT_PTHREAD=true \
-    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/app/oneTBB/install/ && \
-    cmake --build . -j4 && \
+    cmake --build . -j$(nproc) && \
     cmake --install .
 
-# Clone the TinyStan repository
+# Clone the TinyStan repository and checkout a specific commit
 RUN git clone https://github.com/WardBrian/tinystan.git && \
     cd tinystan && \
-    git checkout 17f6cf732a0d9adfc5211fef4474905c92e219a9 && \
+    git checkout "17f6cf732a0d9adfc5211fef4474905c92e219a9" && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
