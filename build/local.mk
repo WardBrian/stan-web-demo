@@ -5,6 +5,10 @@ TBB_LIB=/app/oneTBB/install/lib/
 LDFLAGS_TBB ?= -Wl,-L,"$(TBB_LIB)"
 LDLIBS_TBB ?= -ltbb
 
+# can play with pthreads one day, for now try to decrease binary size
+TINYSTAN_SERIAL=true
+O=s
+
 CXXFLAGS+=-fwasm-exceptions # could also uses -fexceptions which is more compatible, but slower
 LDFLAGS+=-sMODULARIZE -sEXPORT_NAME=createModule -sEXPORT_ES6 -sENVIRONMENT=web
 LDFLAGS+=-sEXIT_RUNTIME=1 -sALLOW_MEMORY_GROWTH=1

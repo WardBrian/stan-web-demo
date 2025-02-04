@@ -22,6 +22,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     emcmake cmake .. \
     -DCMAKE_CXX_COMPILER=em++ \
     -DCMAKE_C_COMPILER=emcc \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DTBB_STRICT=OFF \
     -DCMAKE_CXX_FLAGS="-fwasm-exceptions -Wno-unused-command-line-argument" \
     -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON \
@@ -35,9 +36,9 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     cmake --install .
 
 # Clone the TinyStan repository
-RUN git clone https://github.com/WardBrian/tinystan.git --recursive && \
+RUN git clone https://github.com/WardBrian/tinystan.git && \
     cd tinystan && \
-    git checkout 28e4156837260d8e752dfc50c00fbe2409236c11 && \
+    git checkout 17f6cf732a0d9adfc5211fef4474905c92e219a9 && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
