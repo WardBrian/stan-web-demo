@@ -36,11 +36,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    StanModel.load(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      createModule as (proto?: object) => Promise<any>,
-      printCallback,
-    ).then(model => {
+    StanModel.load(createModule, printCallback).then(model => {
       setModel(model);
       setStanVersion(`Stan Version ${model.stanVersion()}`);
     });
