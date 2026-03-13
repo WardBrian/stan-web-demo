@@ -37,7 +37,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
 # Clone the TinyStan repository and checkout a specific commit
 RUN git clone https://github.com/WardBrian/tinystan.git && \
     cd tinystan && \
-    git checkout "48214842ea2a8d7ce0a722684ee91e8fe98b3ed2" && \
+    git checkout "2880fdc8e14b7490ebf2209389856ccb46a88366" && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan

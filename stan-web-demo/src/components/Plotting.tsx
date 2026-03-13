@@ -3,7 +3,7 @@ import useMeasure from "react-use-measure";
 import Plotly from "plotly.js-cartesian-dist";
 
 import createPlotlyComponent from "react-plotly.js/factory";
-const Plot = createPlotlyComponent(Plotly);
+const Plot = (createPlotlyComponent as any).default(Plotly); // workaround for https://github.com/vitejs/rolldown-vite/issues/490
 
 const average = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
