@@ -2866,10 +2866,10 @@ tinyglobby@^0.2.15, tinyglobby@^0.2.17:
     fdir "^6.5.0"
     picomatch "^4.0.4"
 
-tinystan@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/tinystan/-/tinystan-0.3.2.tgz#6b823dae25dcea6359e3aed64f2f0afc69dea721"
-  integrity sha512-PSqQJ0+wztxGJGEkHYx5jJGZZGWEZpOAZvCxuu3srmO26lM1CEn8uY4aQQzOPX0htmyxstrBFqEW6ZjF3eM5/Q==
+tinystan@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/tinystan/-/tinystan-0.3.3.tgz#6bb07a7522fd91f12586650f6d12cd127d43cc6b"
+  integrity sha512-qRvhT8t86q6Ac/MTcwf3jEifM3JHqJTEzspvLkld1SRErtKqsydJ14iB1DGyeQK6hegEsv0DREYoehKu+S1PWg==
 
 to-fast-properties@^2.0.0:
   version "2.0.0"

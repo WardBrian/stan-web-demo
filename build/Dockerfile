@@ -1,5 +1,5 @@
 # Dockerfile
-FROM emscripten/emsdk:4.0.21 AS builder
+FROM emscripten/emsdk:6.0.0 AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -26,7 +26,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     -DTBB_STRICT=OFF \
     -DCMAKE_CXX_FLAGS="-fwasm-exceptions -Wno-unused-command-line-argument" \
     -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON \
-    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_SHARED_LIBS=OFF \
     -DTBB_EXAMPLES=OFF \
     -DTBB_TEST=OFF \
     -DEMSCRIPTEN_WITHOUT_PTHREAD=true \
@@ -37,7 +37,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
 # Clone the TinyStan repository and checkout a specific commit
 RUN git clone https://github.com/WardBrian/tinystan.git && \
     cd tinystan && \
-    git checkout "2880fdc8e14b7490ebf2209389856ccb46a88366" && \
+    git checkout "52b8825e5ff44c9b703ffdfed3a17dcabf0f7590" && \
     git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
