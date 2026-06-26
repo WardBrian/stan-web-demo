@@ -42,6 +42,7 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     cmake --install .
 
 # Copy the local configuration file for TinyStan
+COPY patch.hpp /app/tinystan/patch.hpp
 COPY local.mk /app/tinystan/make/local
 
 # Build the model

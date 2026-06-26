@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 
@@ -35,12 +35,27 @@ const App = () => {
       .then(setStanCode);
   }, []);
 
+  const [_keepalive, setkeepalive] = useState<(() => void) | undefined>(
+    undefined,
+  );
+  // const [stopkeepalive, setstopkeepalive] = useState<(() => void) | undefined>(
+  //   undefined,
+  // );
+
+  const createModule2 = useCallback(async (prototype: any) => {
+    const m: any = await createModule(prototype);
+    // something weird is happening with react, where I don't even have to call this?
+    setkeepalive(m._start_keepalive_mainloop);
+    // setstopkeepalive(m._stop_keepalive_mainloop);
+    return m;
+  }, []);
+
   useEffect(() => {
-    StanModel.load(createModule, printCallback).then(model => {
+    StanModel.load(createModule2, printCallback).then(model => {
       setModel(model);
       setStanVersion(`Stan Version ${model.stanVersion()}`);
     });
-  }, []);
+  }, [createModule2]);
 
   return (
     <>
@@ -58,8 +73,13 @@ const App = () => {
         onClick={() => {
           if (!model) return;
           clearStdout();
+          /*          if (keepalive) {
+            console.log("calling keepalive");
+            keepalive();
+            }*/
           setDraws(model.sample({ data, num_threads: 4 }).draws[7]);
           setOutput(getStdout());
+          /* if (stopkeepalive) stopkeepalive(); */
         }}
         variant="contained"
         disabled={!model ? true : undefined}

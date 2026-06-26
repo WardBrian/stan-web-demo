@@ -4018,12 +4018,222 @@ function _clock_time_get(clk_id, ignored_precision, ptime) {
   return 0;
 }
 
-var _emscripten_check_blocking_allowed = () => {};
-
 var runtimeKeepalivePush = () => {
   runtimeKeepaliveCounter += 1;
   dbg(`runtimeKeepalivePush -> counter=${runtimeKeepaliveCounter}`);
 };
+
+var _emscripten_set_main_loop_timing = (mode, value) => {
+  MainLoop.timingMode = mode;
+  MainLoop.timingValue = value;
+  if (!MainLoop.func) {
+    return 1;
+  }
+  if (!MainLoop.running) {
+    runtimeKeepalivePush();
+    MainLoop.running = true;
+  }
+  if (mode == 0) {
+    MainLoop.scheduler = function MainLoop_scheduler_setTimeout() {
+      var timeUntilNextTick = Math.max(0, MainLoop.tickStartTime + value - _emscripten_get_now()) | 0;
+      setTimeout(MainLoop.runner, timeUntilNextTick);
+    };
+  } else if (mode == 1) {
+    MainLoop.scheduler = function MainLoop_scheduler_rAF() {
+      MainLoop.requestAnimationFrame(MainLoop.runner);
+    };
+  } else {
+    if (!MainLoop.setImmediate) {
+      if (globalThis.scheduler) {
+        // Some modern browsers implement scheduler.postTask, but not all.
+        dbg("setImmediate: using scheduler.postTask");
+        MainLoop.setImmediate = scheduler.postTask.bind(scheduler);
+      } else {
+        dbg("setImmediate: using polyfill");
+        // Emulate setImmediate. (note: not a complete polyfill, we don't emulate clearImmediate() to keep code size to minimum, since not needed)
+        var setImmediates = [];
+        var emscriptenMainLoopMessageId = "setimmediate";
+        /** @param {Event} event */ var MainLoop_setImmediate_messageHandler = event => {
+          if (event.data === emscriptenMainLoopMessageId) {
+            event.stopPropagation();
+            setImmediates.shift()();
+          }
+        };
+        addEventListener("message", MainLoop_setImmediate_messageHandler, true);
+        MainLoop.setImmediate = /** @type{function(function(): ?, ...?): number} */ (func => {
+          setImmediates.push(func);
+          if (ENVIRONMENT_IS_WORKER) {
+            // The postMessge API in a Worker, sends message to the main
+            // thread and does not support the `targetOrigin` (*) argument.
+            postMessage(emscriptenMainLoopMessageId);
+          } else {
+            postMessage(emscriptenMainLoopMessageId, "*");
+          }
+        });
+      }
+    }
+    MainLoop.scheduler = function MainLoop_scheduler_setImmediate() {
+      MainLoop.setImmediate(MainLoop.runner);
+    };
+  }
+  return 0;
+};
+
+var runtimeKeepalivePop = () => {
+  runtimeKeepaliveCounter -= 1;
+  dbg(`runtimeKeepalivePop -> counter=${runtimeKeepaliveCounter}`);
+};
+
+/**
+   * @param {number=} arg
+   * @param {boolean=} noSetTiming
+   */ var setMainLoop = (iterFunc, fps, simulateInfiniteLoop, arg, noSetTiming) => {
+  MainLoop.func = iterFunc;
+  MainLoop.arg = arg;
+  var thisMainLoopId = MainLoop.currentlyRunningMainloop;
+  function checkIsRunning() {
+    if (thisMainLoopId < MainLoop.currentlyRunningMainloop) {
+      dbg("main loop exiting");
+      runtimeKeepalivePop();
+      maybeExit();
+      return false;
+    }
+    return true;
+  }
+  // We create the loop runner here but it is not actually running until
+  // _emscripten_set_main_loop_timing is called (which might happen at a
+  // later time).  This member signifies that the current runner has not
+  // yet been started so that we can call runtimeKeepalivePush when it
+  // gets its timing set for the first time.
+  MainLoop.running = false;
+  MainLoop.runner = function MainLoop_runner() {
+    if (ABORT) return;
+    if (MainLoop.queue.length > 0) {
+      var start = Date.now();
+      var blocker = MainLoop.queue.shift();
+      blocker.func(blocker.arg);
+      if (MainLoop.remainingBlockers) {
+        var remaining = MainLoop.remainingBlockers;
+        var next = remaining % 1 == 0 ? remaining - 1 : Math.floor(remaining);
+        if (blocker.counted) {
+          MainLoop.remainingBlockers = next;
+        } else {
+          // not counted, but move the progress along a tiny bit
+          next = next + .5;
+          // do not steal all the next one's progress
+          MainLoop.remainingBlockers = (8 * remaining + next) / 9;
+        }
+      }
+      dbg(`main loop blocker "${blocker.name}" took '${Date.now() - start} ms`);
+      //, left: ' + MainLoop.remainingBlockers);
+      MainLoop.updateStatus();
+      // catches pause/resume main loop from blocker execution
+      if (!checkIsRunning()) return;
+      setTimeout(MainLoop.runner, 0);
+      return;
+    }
+    // catch pauses from non-main loop sources
+    if (!checkIsRunning()) return;
+    // Implement very basic swap interval control
+    MainLoop.currentFrameNumber = MainLoop.currentFrameNumber + 1 | 0;
+    if (MainLoop.timingMode == 1 && MainLoop.timingValue > 1 && MainLoop.currentFrameNumber % MainLoop.timingValue != 0) {
+      // Not the scheduled time to render this frame - skip.
+      MainLoop.scheduler();
+      return;
+    } else if (MainLoop.timingMode == 0) {
+      MainLoop.tickStartTime = _emscripten_get_now();
+    }
+    MainLoop.runIter(iterFunc);
+    // catch pauses from the main loop itself
+    if (!checkIsRunning()) return;
+    MainLoop.scheduler();
+  };
+  if (!noSetTiming) {
+    if (fps > 0) {
+      _emscripten_set_main_loop_timing(0, 1e3 / fps);
+    } else {
+      // Do rAF by rendering each frame (no decimating)
+      _emscripten_set_main_loop_timing(1, 1);
+    }
+    MainLoop.scheduler();
+  }
+  if (simulateInfiniteLoop) {
+    throw "unwind";
+  }
+};
+
+var MainLoop = {
+  running: false,
+  scheduler: null,
+  currentlyRunningMainloop: 0,
+  func: null,
+  arg: 0,
+  timingMode: 0,
+  timingValue: 0,
+  currentFrameNumber: 0,
+  queue: [],
+  preMainLoop: [],
+  postMainLoop: [],
+  pause() {
+    MainLoop.scheduler = null;
+    // Incrementing this signals the previous main loop that it's now become old, and it must return.
+    MainLoop.currentlyRunningMainloop++;
+  },
+  resume() {
+    MainLoop.currentlyRunningMainloop++;
+    var timingMode = MainLoop.timingMode;
+    var timingValue = MainLoop.timingValue;
+    var func = MainLoop.func;
+    MainLoop.func = null;
+    // do not set timing and call scheduler, we will do it on the next lines
+    setMainLoop(func, 0, false, MainLoop.arg, true);
+    _emscripten_set_main_loop_timing(timingMode, timingValue);
+    MainLoop.scheduler();
+  },
+  updateStatus() {},
+  init() {},
+  runIter(func) {
+    if (ABORT) return;
+    for (var pre of MainLoop.preMainLoop) {
+      if (pre() === false) {
+        return;
+      }
+    }
+    callUserCallback(func);
+    for (var post of MainLoop.postMainLoop) {
+      post();
+    }
+  },
+  nextRAF: 0,
+  fakeRequestAnimationFrame(func) {
+    // try to keep 60fps between calls to here
+    var now = Date.now();
+    if (MainLoop.nextRAF === 0) {
+      MainLoop.nextRAF = now + 1e3 / 60;
+    } else {
+      while (now + 2 >= MainLoop.nextRAF) {
+        // fudge a little, to avoid timer jitter causing us to do lots of delay:0
+        MainLoop.nextRAF += 1e3 / 60;
+      }
+    }
+    var delay = Math.max(MainLoop.nextRAF - now, 0);
+    setTimeout(func, delay);
+  },
+  requestAnimationFrame(func) {
+    if (globalThis.requestAnimationFrame) {
+      requestAnimationFrame(func);
+    } else {
+      MainLoop.fakeRequestAnimationFrame(func);
+    }
+  }
+};
+
+var _emscripten_cancel_main_loop = () => {
+  MainLoop.pause();
+  MainLoop.func = null;
+};
+
+var _emscripten_check_blocking_allowed = () => {};
 
 var _emscripten_exit_with_live_runtime = () => {
   runtimeKeepalivePush();
@@ -4101,6 +4311,11 @@ var _emscripten_resize_heap = requestedSize => {
     }
   }
   return false;
+};
+
+var _emscripten_set_main_loop = (func, fps, simulateInfiniteLoop) => {
+  var iterFunc = getWasmTableEntry(func);
+  setMainLoop(iterFunc, fps, simulateInfiniteLoop);
 };
 
 var ENV = {};
@@ -4262,6 +4477,14 @@ FS.preloadFile = FS_preloadFile;
 
 FS.staticInit();
 
+Module["requestAnimationFrame"] = MainLoop.requestAnimationFrame;
+
+Module["pauseMainLoop"] = MainLoop.pause;
+
+Module["resumeMainLoop"] = MainLoop.resume;
+
+MainLoop.init();
+
 // End JS library code
 // include: postlibrary.js
 // This file is included after the automatically-generated JS library code
@@ -4295,12 +4518,14 @@ Module["lengthBytesUTF8"] = lengthBytesUTF8;
 var proxiedFunctionTable = [ _proc_exit, exitOnMainThread, pthreadCreateProxied, ___syscall_fcntl64, ___syscall_ioctl, ___syscall_openat, _environ_get, _environ_sizes_get, _fd_close, _fd_read, _fd_seek, _fd_write ];
 
 // Imports from the Wasm binary.
-var _pthread_self, _malloc, _free, _tinystan_create_model, _tinystan_destroy_model, _tinystan_model_param_names, _tinystan_model_num_free_params, _tinystan_separator_char, _tinystan_sample, _tinystan_get_error_message, _tinystan_get_error_type, _tinystan_destroy_error, _tinystan_api_version, _tinystan_stan_version, __emscripten_tls_init, __emscripten_thread_init, ___set_thread_state, __emscripten_thread_crashed, __emscripten_run_js_on_main_thread_done, __emscripten_run_js_on_main_thread, __emscripten_thread_free_data, __emscripten_thread_exit, __emscripten_check_mailbox, ___trap, _emscripten_stack_set_limits, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, __indirect_function_table, wasmTable;
+var _pthread_self, _malloc, _free, _start_keepalive_mainloop, _stop_keepalive_mainloop, _tinystan_create_model, _tinystan_destroy_model, _tinystan_model_param_names, _tinystan_model_num_free_params, _tinystan_separator_char, _tinystan_sample, _tinystan_get_error_message, _tinystan_get_error_type, _tinystan_destroy_error, _tinystan_api_version, _tinystan_stan_version, __emscripten_tls_init, __emscripten_thread_init, ___set_thread_state, __emscripten_thread_crashed, __emscripten_run_js_on_main_thread_done, __emscripten_run_js_on_main_thread, __emscripten_thread_free_data, __emscripten_thread_exit, __emscripten_check_mailbox, ___trap, _emscripten_stack_set_limits, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, __indirect_function_table, wasmTable;
 
 function assignWasmExports(wasmExports) {
   _pthread_self = wasmExports["pthread_self"];
   _malloc = Module["_malloc"] = wasmExports["malloc"];
   _free = Module["_free"] = wasmExports["free"];
+  _start_keepalive_mainloop = Module["_start_keepalive_mainloop"] = wasmExports["start_keepalive_mainloop"];
+  _stop_keepalive_mainloop = Module["_stop_keepalive_mainloop"] = wasmExports["stop_keepalive_mainloop"];
   _tinystan_create_model = Module["_tinystan_create_model"] = wasmExports["tinystan_create_model"];
   _tinystan_destroy_model = Module["_tinystan_destroy_model"] = wasmExports["tinystan_destroy_model"];
   _tinystan_model_param_names = Module["_tinystan_model_param_names"] = wasmExports["tinystan_model_param_names"];
@@ -4347,12 +4572,14 @@ function assignWasmImports() {
     /** @export */ _emscripten_thread_set_strongref: __emscripten_thread_set_strongref,
     /** @export */ _tzset_js: __tzset_js,
     /** @export */ clock_time_get: _clock_time_get,
+    /** @export */ emscripten_cancel_main_loop: _emscripten_cancel_main_loop,
     /** @export */ emscripten_check_blocking_allowed: _emscripten_check_blocking_allowed,
     /** @export */ emscripten_exit_with_live_runtime: _emscripten_exit_with_live_runtime,
     /** @export */ emscripten_get_heap_max: _emscripten_get_heap_max,
     /** @export */ emscripten_get_now: _emscripten_get_now,
     /** @export */ emscripten_num_logical_cores: _emscripten_num_logical_cores,
     /** @export */ emscripten_resize_heap: _emscripten_resize_heap,
+    /** @export */ emscripten_set_main_loop: _emscripten_set_main_loop,
     /** @export */ environ_get: _environ_get,
     /** @export */ environ_sizes_get: _environ_sizes_get,
     /** @export */ exit: _exit,
