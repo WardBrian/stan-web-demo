@@ -17,6 +17,13 @@ RUN wget https://github.com/uxlfoundation/oneTBB/archive/refs/tags/v2021.13.0.ta
     tar -xvf v2021.13.0.tar.gz && \
     mv oneTBB-2021.13.0 oneTBB
 
+
+# Clone the TinyStan repository and checkout a specific commit
+RUN git clone https://github.com/WardBrian/tinystan.git && \
+    cd tinystan && \
+    git checkout "52b8825e5ff44c9b703ffdfed3a17dcabf0f7590" && \
+    git submodule update --init --recursive
+
 # Build oneTBB with emscripten
 RUN mkdir oneTBB/build && cd oneTBB/build && \
     emcmake cmake .. \
@@ -29,16 +36,10 @@ RUN mkdir oneTBB/build && cd oneTBB/build && \
     -DBUILD_SHARED_LIBS=OFF \
     -DTBB_EXAMPLES=OFF \
     -DTBB_TEST=OFF \
-    -DEMSCRIPTEN_WITHOUT_PTHREAD=true \
+    -DEMSCRIPTEN_WITHOUT_PTHREAD=false \
     -DCMAKE_INSTALL_PREFIX=/app/oneTBB/install/ && \
     cmake --build . -j$(nproc) && \
     cmake --install .
-
-# Clone the TinyStan repository and checkout a specific commit
-RUN git clone https://github.com/WardBrian/tinystan.git && \
-    cd tinystan && \
-    git checkout "52b8825e5ff44c9b703ffdfed3a17dcabf0f7590" && \
-    git submodule update --init --recursive
 
 # Copy the local configuration file for TinyStan
 COPY local.mk /app/tinystan/make/local

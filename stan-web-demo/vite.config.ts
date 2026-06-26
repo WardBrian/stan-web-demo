@@ -25,6 +25,10 @@ export default defineConfig({
     },
   },
   server: {
-    host: "127.0.0.1",
+    headers: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
+    hmr: false,
   },
 });
